@@ -1,8 +1,7 @@
 <?php
 session_start();
-require_once '../config/database.php';
 
-// Check if already logged in
+// Jika pengguna SUDAH login, langsung arahkan ke dashboard
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
     header('Location: dashboard.php');
     exit();
@@ -10,17 +9,21 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 
 $error_message = '';
 
-if ($_POST) {
+// Proses form hanya jika metode request adalah POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
-    
-    // Simple admin credentials (in production, use hashed passwords)
+
+    // Di aplikasi nyata, bagian ini akan memeriksa username & password ke database
+    // dengan password yang sudah di-hash.
     if ($username === 'admin' && $password === 'admin123') {
+        // Jika login berhasil, set session dan arahkan ke dashboard
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_username'] = $username;
         header('Location: dashboard.php');
         exit();
     } else {
+        // Jika gagal, siapkan pesan error
         $error_message = 'Username atau password salah!';
     }
 }
@@ -28,6 +31,7 @@ if ($_POST) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,6 +39,7 @@ if ($_POST) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
+        // Konfigurasi Tailwind bisa diletakkan di sini karena halaman ini unik
         tailwind.config = {
             theme: {
                 extend: {
@@ -57,9 +62,10 @@ if ($_POST) {
         }
     </script>
 </head>
+
 <body class="bg-gray-100">
     <div class="min-h-screen flex items-center justify-center">
-        <div class="max-w-md w-full space-y-8">
+        <div class="max-w-md w-full space-y-8 p-4">
             <div>
                 <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-turquoise-100">
                     <i class="fas fa-user-shield text-turquoise-600 text-xl"></i>
@@ -71,39 +77,39 @@ if ($_POST) {
                     Bus Tividi Pariwisata - Admin Panel
                 </p>
             </div>
-            
-            <form class="mt-8 space-y-6" method="POST">
+
+            <form class="mt-8 space-y-6" method="POST" action="login.php">
                 <?php if ($error_message): ?>
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <?php echo htmlspecialchars($error_message); ?>
-                </div>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline"><?php echo htmlspecialchars($error_message); ?></span>
+                    </div>
                 <?php endif; ?>
-                
+
                 <div class="rounded-md shadow-sm -space-y-px">
                     <div>
                         <label for="username" class="sr-only">Username</label>
-                        <input id="username" name="username" type="text" required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-turquoise-500 focus:border-turquoise-500 focus:z-10 sm:text-sm" 
-                               placeholder="Username">
+                        <input id="username" name="username" type="text" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-turquoise-500 focus:border-turquoise-500 focus:z-10 sm:text-sm"
+                            placeholder="Username">
                     </div>
                     <div>
                         <label for="password" class="sr-only">Password</label>
-                        <input id="password" name="password" type="password" required 
-                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-turquoise-500 focus:border-turquoise-500 focus:z-10 sm:text-sm" 
-                               placeholder="Password">
+                        <input id="password" name="password" type="password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-turquoise-500 focus:border-turquoise-500 focus:z-10 sm:text-sm"
+                            placeholder="Password">
                     </div>
                 </div>
 
                 <div>
-                    <button type="submit" 
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-turquoise-600 hover:bg-turquoise-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-turquoise-500">
+                    <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-turquoise-600 hover:bg-turquoise-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-turquoise-500">
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i class="fas fa-lock text-turquoise-500 group-hover:text-turquoise-400"></i>
                         </span>
                         Masuk
                     </button>
                 </div>
-                
+
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
                         Default: admin / admin123
@@ -113,4 +119,5 @@ if ($_POST) {
         </div>
     </div>
 </body>
+
 </html>

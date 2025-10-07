@@ -3,45 +3,62 @@ require_once 'config/database.php';
 
 // Fetch data from database
 try {
-
-
     $gallery_stmt = $pdo->query("SELECT * FROM gallery ORDER BY category, id ASC");
     $gallery_items = $gallery_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-} catch(PDOException $e) {
-    // Fallback data if database is not available
+} catch (PDOException $e) {
     $gallery_items = [];
 }
 
+// Filter: exclude items with is_hero = 1
+$gallery_items = array_filter($gallery_items, function ($item) {
+    return empty($item['is_hero']) || $item['is_hero'] == 0;
+});
+
 // Validate and clean gallery items
-$gallery_items = array_map(function($item) {
+$gallery_items = array_map(function ($item) {
     return [
         'id' => $item['id'] ?? 0,
-        'title' => $item['title'] ?? 'Untitled',
-        'image_url' => $item['image_path'] ?? 'placeholder.jpg',
-        'category' => $item['category'] ?? 'general',
-        'description' => $item['description'] ?? 'No description available'
+        'title' => $item['title'] ?? '',
+        'image_url' => $item['image_path'] ?? '',
+        'category' => $item['category'] ?? '',
+        'description' => $item['description'] ?? '',
+        'is_featured' => $item['is_featured'] ?? 0,
+        'is_hero' => $item['is_hero'] ?? 0,
     ];
 }, $gallery_items);
 
 // Separate items by category
-$interior_items = array_filter($gallery_items, function($item) {
+$interior_items = array_filter($gallery_items, function ($item) {
     return $item['category'] === 'interior';
 });
-$exterior_items = array_filter($gallery_items, function($item) {
+$exterior_items = array_filter($gallery_items, function ($item) {
     return $item['category'] === 'exterior';
+});
+
+// Ambil foto hero (is_hero = 1)
+$hero_stmt = $pdo->query("SELECT * FROM gallery WHERE is_hero = 1 ORDER BY id DESC LIMIT 1");
+$hero_item = $hero_stmt->fetch(PDO::FETCH_ASSOC);
+
+// Gallery unggulan (hanya is_featured = 1)
+$featured_items = array_filter($gallery_items, function ($item) {
+    return !empty($item['is_featured']) && $item['is_featured'] == 1;
+});
+$additional_items = array_filter($gallery_items, function ($item) {
+    return empty($item['is_featured']) || $item['is_featured'] == 0;
 });
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fasilitas - <?php echo $company['name']; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SwiperJS CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script>
         tailwind.config = {
             theme: {
@@ -64,9 +81,35 @@ $exterior_items = array_filter($gallery_items, function($item) {
             }
         }
     </script>
+    <style>
+        /* Perkecil ukuran dan ubah warna panah Swiper */
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: #14b8a6;
+            /* turquoise-500 */
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(20, 184, 166, 0.15);
+            transition: background 0.2s;
+        }
+
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+            font-size: 20px !important;
+        }
+
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            background: #ccfbf1;
+            /* turquoise-100 */
+        }
+    </style>
 </head>
+
 <body class="bg-white">
-        <!-- Navigation -->
+    <!-- Navigation -->
     <nav class="bg-white shadow-lg fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -104,16 +147,44 @@ $exterior_items = array_filter($gallery_items, function($item) {
     </nav>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-br from-yellow-500 via-turquoise-500 to-orange-500 text-white pt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div class="text-center">
+    <?php
+    if ($hero_item && !empty($hero_item['image_path'])) {
+        $hero_bg = "background-image: url('" . htmlspecialchars($hero_item['image_path']) . "');";
+    } else {
+        $hero_bg = "background: #fde047;";
+    }
+    ?>
+    <section class="relative bg-contain bg-center bg-no-repeat text-white pt-16"
+        style="<?php echo $hero_bg; ?> height: 600px; background-size: contain; background-color:rgba(240,249,255,0);">
+        <!-- Overlay agar teks tetap terbaca -->
+        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+
+        <!-- Content -->
+        <!-- <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex items-center min-h-[400px] min-h-screen">
+            <div class="text-center w-full"></div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-6">Fasilitas Bus</h1>
                 <p class="text-xl md:text-2xl mb-8">Kenyamanan dan kemewahan dalam setiap perjalanan</p>
             </div>
-        </div>
+        </div> -->
     </section>
 
+    <!-- Welcome Section -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-4">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">Fasilitas Bus</h1>
+                <p class="text-xl md:text-2xl mb-2">Kenyamanan dan kemewahan dalam setiap perjalanan</p>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Bus Pariwisata Tividibukan hanya sekadar transportasi,
+                    tapi juga partner perjalanan yang membuat setiap momen wisata
+                    Anda menjadi lebih menyenangkan dan tak terlupakan.
+                    Kami menawarkan berbagai fasilitas untuk menunjang keamanan dan
+                    kenyamanan pada perjalanan Anda,seperti ;
+                </p>
+            </div>
 
+        </div>
+    </section>
 
     <!-- Gallery Section -->
     <section class="py-16">
@@ -123,22 +194,9 @@ $exterior_items = array_filter($gallery_items, function($item) {
                 <p class="text-lg text-gray-600">Lihat koleksi foto interior dan eksterior bus kami</p>
             </div>
 
-            <!-- Filter Buttons -->
-            <div class="flex justify-center space-x-4 mb-8">
-                <button class="filter-btn active bg-turquoise-600 text-white px-6 py-2 rounded-full hover:bg-turquoise-700 transition duration-300" data-filter="all">
-                    Semua
-                </button>
-                <button class="filter-btn bg-white text-turquoise-600 border-2 border-turquoise-600 px-6 py-2 rounded-full hover:bg-turquoise-600 hover:text-white transition duration-300" data-filter="interior">
-                    Interior
-                </button>
-                <button class="filter-btn bg-white text-turquoise-600 border-2 border-turquoise-600 px-6 py-2 rounded-full hover:bg-turquoise-600 hover:text-white transition duration-300" data-filter="exterior">
-                    Eksterior
-                </button>
-            </div>
-
             <!-- Gallery Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="gallery-grid">
-                <?php foreach ($gallery_items as $item): ?>
+                <?php foreach ($featured_items as $item): ?>
                     <div class="gallery-item bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2" data-category="<?php echo $item['category']; ?>">
                         <div class="h-64 overflow-hidden cursor-pointer" onclick="openModal(<?php echo htmlspecialchars(json_encode($item['image_url']), ENT_QUOTES); ?>, <?php echo htmlspecialchars(json_encode($item['title']), ENT_QUOTES); ?>, <?php echo htmlspecialchars(json_encode($item['description']), ENT_QUOTES); ?>)">
                             <?php if (!empty($item['image_url']) && file_exists($item['image_url'])): ?>
@@ -210,13 +268,47 @@ $exterior_items = array_filter($gallery_items, function($item) {
                     </div>
                 </div>
                 <div class="relative rounded-lg overflow-hidden shadow-lg">
-                    <img src="images/interior.JPG" alt="Interior Bus Premium - Kursi Ergonomis dengan Pencahayaan LED" class="w-full h-96 object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                    <div class="absolute bottom-4 left-4 text-white">
-                        <p class="text-lg font-semibold">Interior Bus Premium</p>
-                        <p class="text-sm opacity-90">Kursi ergonomis dengan pencahayaan LED ambient</p>
+                    <!-- Swiper -->
+                    <div class="swiper interior-swiper h-96">
+                        <div class="swiper-wrapper">
+                            <?php foreach ($interior_items as $item): ?>
+                                <?php if (!empty($item['image_url']) && file_exists($item['image_url'])): ?>
+                                    <div class="swiper-slide">
+                                        <img src="<?php echo $item['image_url']; ?>" alt="Interior Bus" class="w-full h-96 object-cover" />
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                        <!-- Navigasi panah -->
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <!-- Pagination bulat -->
+                        <div class="swiper-pagination"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fasilitas Lainnya Section -->
+    <section class="py-8 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4 flex items-center justify-center">
+                    <span class="mr-2 text-turquoise-300 text-3xl"></span> Fasilitas lainnya
+                </h2>
+                <p class="text-lg text-gray-600">
+                    Selain fasilitas utama, kami juga menyediakan berbagai fasilitas tambahan untuk menunjang kenyamanan dan kebutuhan Anda selama perjalanan. Setiap detail dirancang agar perjalanan Anda semakin menyenangkan dan praktis.
+                </p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-6">
+                <?php foreach ($additional_items as $item): ?>
+                    <?php if (!empty($item['image_url']) && file_exists($item['image_url'])): ?>
+                        <div class="rounded-xl overflow-hidden shadow-md bg-white" style="width:180px; height:180px;">
+                            <img src="<?php echo $item['image_url']; ?>" alt="Fasilitas Tambahan" class="w-full h-full object-cover" />
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -229,7 +321,7 @@ $exterior_items = array_filter($gallery_items, function($item) {
                 <p class="text-lg text-gray-600">Keselamatan adalah prioritas utama kami</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="text-center">
                     <div class="bg-red-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-fire-extinguisher text-2xl"></i>
@@ -251,20 +343,9 @@ $exterior_items = array_filter($gallery_items, function($item) {
                     <h3 class="text-lg font-semibold mb-2">P3K</h3>
                     <p class="text-gray-600 text-sm">Kotak P3K lengkap untuk pertolongan pertama</p>
                 </div>
-                <div class="text-center">
-                    <div class="bg-blue-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-video text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">CCTV</h3>
-                    <p class="text-gray-600 text-sm">Sistem CCTV untuk monitoring keamanan perjalanan</p>
-                </div>
             </div>
         </div>
     </section>
-
-
-
-
 
     <!-- Modal -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
@@ -286,7 +367,7 @@ $exterior_items = array_filter($gallery_items, function($item) {
         </div>
     </div>
 
-   <!-- Footer -->
+    <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-20">
@@ -297,7 +378,7 @@ $exterior_items = array_filter($gallery_items, function($item) {
                 </div>
 
                 <!-- Contact Info -->
-                 <div>
+                <div>
                     <h4 class="text-lg font-semibold mb-4 text-emerald-400">Informasi Kontak</h4>
                     <div class="space-y-3">
                         <div class="flex items-center">
@@ -344,7 +425,23 @@ $exterior_items = array_filter($gallery_items, function($item) {
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
+        // Inisialisasi Swiper untuk interior
+        var interiorSwiper = new Swiper('.interior-swiper', {
+            loop: true,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            slidesPerView: 1,
+            spaceBetween: 0,
+        });
+
         // Gallery filtering functionality
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = document.querySelectorAll('.filter-btn');
@@ -429,4 +526,5 @@ $exterior_items = array_filter($gallery_items, function($item) {
         });
     </script>
 </body>
+
 </html>

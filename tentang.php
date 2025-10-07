@@ -14,19 +14,21 @@ try {
     if (!$mission) {
         $mission = ['content' => 'Memberikan layanan transportasi pariwisata yang aman, nyaman, dan terpercaya dengan armada modern dan tenaga profesional yang berpengalaman.'];
     }
-
-
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     // Fallback data if database is not available
 
     $vision = ['content' => 'Menjadi perusahaan transportasi pariwisata terdepan di Indonesia yang memberikan pelayanan berkualitas tinggi dan pengalaman perjalanan yang tak terlupakan.'];
     $mission = ['content' => 'Memberikan layanan transportasi pariwisata yang aman, nyaman, dan terpercaya dengan armada modern dan tenaga profesional yang berpengalaman.'];
-
 }
+
+// Ambil foto hero (is_hero = 1)
+$hero_stmt = $pdo->query("SELECT * FROM gallery WHERE is_hero = 1 ORDER BY id DESC LIMIT 1");
+$hero_item = $hero_stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +58,7 @@ try {
         }
     </script>
 </head>
+
 <body class="bg-white">
 
     <!-- Navigation -->
@@ -88,7 +91,7 @@ try {
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                   <a href="index.php" class="block px-3 py-2 text-gray-700 hover:text-turquoise-600 text-sm font-medium">Beranda</a>
+                <a href="index.php" class="block px-3 py-2 text-gray-700 hover:text-turquoise-600 text-sm font-medium">Beranda</a>
                 <a href="tentang.php" class="block px-3 py-2 bg-turquoise-600 text-white rounded-lg text-sm font-medium mx-3">Tentang</a>
                 <a href="fasilitas.php" class="block px-3 py-2 text-gray-700 hover:text-turquoise-600 text-sm font-medium">Fasilitas</a>
             </div>
@@ -96,39 +99,69 @@ try {
     </nav>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-br from-yellow-500 via-turquoise-500 to-orange-500 text-white pt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6">Tentang Kami</h1>
-                <p class="text-xl md:text-2xl mb-8">Mengenal lebih dekat <?php echo isset($company['name']) ? $company['name'] : 'Bus Tividi Pariwisata'; ?></p>
+    <?php
+    if ($hero_item && !empty($hero_item['image_path'])) {
+        $hero_bg = "background-image: url('" . htmlspecialchars($hero_item['image_path']) . "');";
+    } else {
+        $hero_bg = "background: #fde047;";
+    }
+    ?>
+    <section class="relative bg-contain bg-center bg-no-repeat text-white pt-16"
+        style="<?php echo $hero_bg; ?> height: 600px; background-size: contain; background-color:rgba(240,249,255,0);">
+        <!-- Overlay agar teks tetap terbaca -->
+        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+
+        <!-- Content -->
+        <!-- <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex items-center min-h-screen">
+            <div class="text-center w-full">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in drop-shadow-lg">Tentang Kami</h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 drop-shadow-md">
+                    Mengenal lebih dekat <?php echo isset($company['name']) ? $company['name'] : 'Bus Tividi Pariwisata'; ?>
+                </p>
             </div>
-        </div>
+        </div> -->
     </section>
 
     <!-- Welcome Section -->
     <section class="py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Selamat Datang di Tividi Bus Pariwisata </h2>
-                <p class="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                    TIVIDI didirikan untuk memenuhi kebutuhan transportasi
-yang andal dan nyaman. Kami melihat adanya
-permintaan yang tinggi untuk layanan bus
-pariwisata, antar-jemput, dan carter, dan kami
-ingin menyediakan solusi yang berkualitas bagi
-masyarakat. Tujuan utama kami adalah menjadi
-penyedia layanan transportasi terkemuka yang
-mengutamakan keselamatan dan kenyamanan
-penumpang.
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in drop-shadow-lg">Tentang Kami</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Mengenal lebih dekat <?php echo isset($company['name']) ? $company['name'] : 'Tividi Bus Pariwisata'; ?>
                 </p>
-                <p class="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                    Sejak awal berdiri, kami terus mengembangkan armada untuk memenuhi
-permintaan pasar yang terus meningkat. Perkembangan ini juga diikuti
-dengan peningkatan kualitas layanan, yang menjadi salah satu pencapaian
-penting bagi kami.
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    TIVIDI menawarkan berbagai layanan, seperti transportasi
+                    pariwisata, antar-jemput, dan carter. Kami memiliki
+                    sejumlah armada bus dengan berbagai tipe, dan kami
+                    selalu menjaga kenyamanan dan keamanan penumpang
+                    dengan perawatan rutin dan standar operasional yang
+                    ketat.
                 </p>
             </div>
 
+        </div>
+    </section>
+
+    <!-- Tentang Kami Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Teks -->
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">TIVIDI TransWisata</h2>
+                    <p class="text-gray-700 text-lg mb-6 leading-relaxed">
+                        <span class="font-bold text-turquoise-600">TIVIDI</span> didirikan untuk memenuhi kebutuhan transportasi yang andal dan nyaman. Kami melihat adanya permintaan yang tinggi untuk layanan bus pariwisata, antar-jemput, dan carter, dan kami ingin menyediakan solusi yang berkualitas bagi masyarakat. Tujuan utama kami adalah menjadi penyedia layanan transportasi terkemuka yang mengutamakan keselamatan dan kenyamanan penumpang.
+                    </p>
+                    <p class="text-gray-700 text-lg leading-relaxed">
+                        Sejak awal berdiri, kami terus mengembangkan armada untuk memenuhi permintaan pasar yang terus meningkat. Perkembangan ini juga diikuti dengan peningkatan kualitas layanan, yang menjadi salah satu pencapaian penting bagi kami.
+                    </p>
+                </div>
+                <!-- Gambar Bus -->
+                <div class="flex justify-center">
+                    <img src="images/bus.png" alt="Bus Tividi Pariwisata" class="w-full max-w-xs md:max-w-sm lg:max-w-md rounded-xl shadow-lg object-contain">
+                </div>
+            </div>
         </div>
     </section>
 
@@ -170,9 +203,7 @@ penting bagi kami.
         </div>
     </section>
 
-
-
-   <!-- Footer -->
+    <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-20">
@@ -231,4 +262,5 @@ penting bagi kami.
 
     <script src="js/main.js"></script>
 </body>
+
 </html>

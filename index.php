@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,6 +30,7 @@
         }
     </script>
 </head>
+
 <body class="bg-white">
     <!-- Navigation -->
     <nav class="bg-white shadow-lg fixed w-full z-50">
@@ -67,7 +69,15 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="relative bg-contain bg-center bg-no-repeat text-white pt-16" style="background-image: url('images/cover.png'); height: 600px; background-size: contain; background-color:rgba(240, 249, 255, 0);">
+    <?php
+    if ($hero_item && !empty($hero_item['image_path'])) {
+        $hero_bg = "background-image: url('" . htmlspecialchars($hero_item['image_path']) . "');";
+    } else {
+        $hero_bg = "background-image: url('images/cover.png');";
+    }
+    ?>
+    <section id="home" class="relative bg-contain bg-center bg-no-repeat text-white pt-16"
+        style="<?php echo $hero_bg; ?> height: 600px; background-size: contain; background-color:rgba(240, 249, 255, 0);">
         <!-- Overlay untuk memastikan teks tetap terbaca -->
         <div class="absolute inset-0 bg-black bg-opacity-10"></div>
 
@@ -75,7 +85,7 @@
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex items-center min-h-screen">
             <div class="text-center w-full">
                 <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in drop-shadow-lg">
-                    <?php echo $company['company_name'] ?? 'Bus Tividi Pariwisata'; ?>
+                    <?php echo $company['company_name'] ?? 'Tividi Bus Pariwisata'; ?>
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 drop-shadow-md">
                     <?php echo $company['description'] ?? 'Transportasi Pariwisata Terpercaya untuk Perjalanan Wisata Anda'; ?>
@@ -91,10 +101,10 @@
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Selamat Datang di Tividi Bus Pariwisata</h2>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
                     Tividi hadir untuk memberikan pengalaman perjalanan yang tak terlupakan dengan
-layanan bus pariwisata terbaik di kelasnya. Armada kami dilengkapi dengan
-fasilitas modern dan kenyamanan maksimal, mulai dari kursi yang luas dan empuk,
-pendingin udara yang sejuk, hingga sistem hiburan yang membuat perjalanan
-Anda semakin menyenangkan.
+                    layanan bus pariwisata terbaik di kelasnya. Armada kami dilengkapi dengan
+                    fasilitas modern dan kenyamanan maksimal, mulai dari kursi yang luas dan empuk,
+                    pendingin udara yang sejuk, hingga sistem hiburan yang membuat perjalanan
+                    Anda semakin menyenangkan.
                 </p>
             </div>
 
@@ -126,7 +136,7 @@ Anda semakin menyenangkan.
         </div>
     </section>
 
-<!-- Video Profile Section -->
+    <!-- Video Profile Section -->
     <section class="py-16 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
@@ -139,7 +149,7 @@ Anda semakin menyenangkan.
                     <div class="aspect-w-16 aspect-h-9">
                         <iframe
                             class="w-full h-96 md:h-[500px]"
-                            src="https://youtube.com/shorts/Eec_ozXcj_E"
+                            src="https://www.youtube.com/embed/Eec_ozXcj_E"
                             title="Video Profil Bus Tividi Pariwisata"
                             frameborder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -169,9 +179,8 @@ Anda semakin menyenangkan.
             </div>
 
             <!-- Grid untuk dua lokasi -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Lokasi 1 -->
-                <a href="https://www.google.com/maps/place/Agen+Reservasi+Bus+Efisiensi/@-7.6984108,109.6980174,17z/data=!4m10!1m2!2m1!1sAlamat+kantor+cabang+Kebumen+Jl+Wonosari+KM+6,+Kebumen,+Jawa+Tengah!3m6!1s0x2e7ac9f406a2a635:0x4c7fa75fb78799a0!8m2!3d-7.6988705!4d109.700336!15sCkNBbGFtYXQga2FudG9yIGNhYmFuZyBLZWJ1bWVuIEpsIFdvbm9zYXJpIEtNIDYsIEtlYnVtZW4sIEphd2EgVGVuZ2FoIgJIAVo8IjprYW50b3IgY2FiYW5nIGtlYnVtZW4gamwgd29ub3Nhcmkga20gNiBrZWJ1bWVuIGphd2EgdGVuZ2FokgEWdHJhbnNwb3J0YXRpb25fc2VydmljZZoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VOR01tUlFUSGRuUlJBQqoBfxABKhkiFWthbnRvciBjYWJhbmcga2VidW1lbigmMiAQASIcNjK-BVB1B57AiK-0WMp6bXEHcc7cnAJ5H96bpTI-EAIiOmthbnRvciBjYWJhbmcga2VidW1lbiBqbCB3b25vc2FyaSBrbSA2IGtlYnVtZW4gamF3YSB0ZW5nYWjgAQD6AQQIABA6!16s%2Fg%2F11b6d2nsxf?entry=ttu&g_ep=EgoyMDI1MDkwMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="block">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <a href="https://www.google.com/maps/place/Bus+Efisiensi+Cabang+Yogyakarta/@-7.777902,110.0632325,49387m/data=!3m1!1e3!4m10!1m2!2m1!1stividi+trans+jogja!3m6!1s0x2e7ae47a08110a8f:0x69ddcda70cc5fc54!8m2!3d-7.8029718!4d110.3111333!15sChJ0aXZpZGkgdHJhbnMgam9namFaFCISdGl2aWRpIHRyYW5zIGpvZ2phkgEWdHJhbnNwb3J0YXRpb25fc2VydmljZZoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VSQ2MyVnhRUzEzUlJBQqoBVgoNL2cvMTFoZDhoMG1kNhABKgoiBnRpdmlkaSgmMh8QASIbMyDeQoqBt0-mpjDfRuGl9Tr5pfm7oVNsN-uhMhYQAiISdGl2aWRpIHRyYW5zIGpvZ2ph4AEA-gEECAAQIQ!16s%2Fg%2F1pzq_c01j?hl=id&entry=ttu&g_ep=EgoyMDI1MTAwMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="block">
                     <div class="bg-gradient-to-br from-turquoise-400 via-turquoise-500 to-orange-400 rounded-xl h-80 flex items-center justify-center shadow-2xl transform hover:scale-[1.02] transition-all duration-300 cursor-pointer group overflow-hidden relative">
                         <!-- Animated background pattern -->
                         <div class="absolute inset-0 opacity-10">
@@ -183,8 +192,8 @@ Anda semakin menyenangkan.
                                 <i class="fas fa-map-marker-alt text-4xl text-white drop-shadow-lg animate-bounce"></i>
                             </div>
                             <h3 class="text-2xl font-bold mb-2 drop-shadow-lg">Peta Lokasi</h3>
-                            <p class="text-lg mb-1 drop-shadow-md opacity-95">Terminal Bus Kebumen, JL. Kutoarjo No.km6</p>
-                            <p class="text-base mb-2 drop-shadow-md opacity-90">Tividi Terminal Kebumen</p>
+                            <p class="text-lg mb-1 drop-shadow-md opacity-95">Reservasi Bus Tividi Jogja</p>
+                            <p class="text-base mb-2 drop-shadow-md opacity-90">Jl. Raya Wates, Km. 6, Ambarketawang, Yogyakarta</p>
                             <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1 inline-block mt-2 border border-white/30">
                                 <p class="text-sm font-medium">
                                     <i class="fas fa-external-link-alt mr-2 animate-pulse"></i>Klik untuk membuka di Google Maps
@@ -197,10 +206,8 @@ Anda semakin menyenangkan.
                         <div class="absolute bottom-4 left-4 w-6 h-6 bg-white/15 rounded-full animate-pulse"></div>
                     </div>
                 </a>
-
-                <!-- Lokasi 2 (jika ada lokasi kedua) -->
-                <a href="https://www.google.com/maps/dir/-7.6763173,109.6702356/Pool+Efisiensi+Cilacap,+Jl.+Perintis+Kemerdekaan+No.52,+Rejanegara,+Gumilir,+Kec.+Cilacap+Utara,+Kabupaten+Cilacap,+Jawa+Tengah+53231/@-7.6435033,108.6942412,9z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x2e656d2e97f6c849:0x30111e5caafe7c8e!2m2!1d109.0377665!2d-7.6887698?entry=ttu&g_ep=EgoyMDI1MDkwMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="block">
-                   <div class="bg-gradient-to-br from-turquoise-400 via-turquoise-500 to-orange-400 rounded-xl h-80 flex items-center justify-center shadow-2xl transform hover:scale-[1.02] transition-all duration-300 cursor-pointer group overflow-hidden relative">
+                <a href="https://www.google.com/maps/place/Agen+Reservasi+Bus+Efisiensi/@-7.6984108,109.6980174,17z/data=!4m10!1m2!2m1!1sAlamat+kantor+cabang+Kebumen+Jl+Wonosari+KM+6,+Kebumen,+Jawa+Tengah!3m6!1s0x2e7ac9f406a2a635:0x4c7fa75fb78799a0!8m2!3d-7.6988705!4d109.700336!15sCkNBbGFtYXQga2FudG9yIGNhYmFuZyBLZWJ1bWVuIEpsIFdvbm9zYXJpIEtNIDYsIEtlYnVtZW4sIEphd2EgVGVuZ2FoIgJIAVo8IjprYW50b3IgY2FiYW5nIGtlYnVtZW4gamwgd29ub3Nhcmkga20gNiBrZWJ1bWVuIGphd2EgdGVuZ2FokgEWdHJhbnNwb3J0YXRpb25fc2VydmljZZoBJENoZERTVWhOTUc5blMwVkpRMEZuU1VOR01tUlFUSGRuUlJBQqoBfxABKhkiFWthbnRvciBjYWJhbmcga2VidW1lbigmMiAQASIcNjK-BVB1B57AiK-0WMp6bXEHcc7cnAJ5H96bpTI-EAIiOmthbnRvciBjYWJhbmcga2VidW1lbiBqbCB3b25vc2FyaSBrbSA2IGtlYnVtZW4gamF3YSB0ZW5nYWjgAQD6AQQIABA6!16s%2Fg%2F11b6d2nsxf?entry=ttu&g_ep=EgoyMDI1MDkwMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="block">
+                    <div class="bg-gradient-to-br from-turquoise-400 via-turquoise-500 to-orange-400 rounded-xl h-80 flex items-center justify-center shadow-2xl transform hover:scale-[1.02] transition-all duration-300 cursor-pointer group overflow-hidden relative">
                         <!-- Animated background pattern -->
                         <div class="absolute inset-0 opacity-10">
                             <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent transform -skew-x-12 animate-pulse"></div>
@@ -211,8 +218,34 @@ Anda semakin menyenangkan.
                                 <i class="fas fa-map-marker-alt text-4xl text-white drop-shadow-lg animate-bounce"></i>
                             </div>
                             <h3 class="text-2xl font-bold mb-2 drop-shadow-lg">Peta Lokasi</h3>
-                            <p class="text-lg mb-1 drop-shadow-md opacity-95">Terminal Bus Cilacap, JL. Perintyis Kemerdekaan No.52</p>
-                            <p class="text-base mb-2 drop-shadow-md opacity-90">Tividi Terminal Cilacap</p>
+                            <p class="text-lg mb-1 drop-shadow-md opacity-95">Rest Area Tividi Kebumen</p>
+                            <p class="text-base mb-2 drop-shadow-md opacity-90">JL. Raya Kutoarjo Km. 6, Jatisari Kebumen</p>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1 inline-block mt-2 border border-white/30">
+                                <p class="text-sm font-medium">
+                                    <i class="fas fa-external-link-alt mr-2 animate-pulse"></i>Klik untuk membuka di Google Maps
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Decorative elements -->
+                        <div class="absolute top-4 right-4 w-8 h-8 bg-white/20 rounded-full animate-ping"></div>
+                        <div class="absolute bottom-4 left-4 w-6 h-6 bg-white/15 rounded-full animate-pulse"></div>
+                    </div>
+                </a>
+                <a href="https://www.google.com/maps/dir/-7.6763173,109.6702356/Pool+Efisiensi+Cilacap,+Jl.+Perintis+Kemerdekaan+No.52,+Rejanegara,+Gumilir,+Kec.+Cilacap+Utara,+Kabupaten+Cilacap,+Jawa+Tengah+53231/@-7.6435033,108.6942412,9z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x2e656d2e97f6c849:0x30111e5caafe7c8e!2m2!1d109.0377665!2d-7.6887698?entry=ttu&g_ep=EgoyMDI1MDkwMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="block">
+                    <div class="bg-gradient-to-br from-turquoise-400 via-turquoise-500 to-orange-400 rounded-xl h-80 flex items-center justify-center shadow-2xl transform hover:scale-[1.02] transition-all duration-300 cursor-pointer group overflow-hidden relative">
+                        <!-- Animated background pattern -->
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent transform -skew-x-12 animate-pulse"></div>
+                        </div>
+
+                        <div class="text-center text-white relative z-10">
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <i class="fas fa-map-marker-alt text-4xl text-white drop-shadow-lg animate-bounce"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2 drop-shadow-lg">Peta Lokasi</h3>
+                            <p class="text-lg mb-1 drop-shadow-md opacity-95">Rest Area Bus Cilacap</p>
+                            <p class="text-base mb-2 drop-shadow-md opacity-90">JL. Raya Perintis Kemerdekaan No.52, Rejanegara, Cilacap</p>
                             <div class="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1 inline-block mt-2 border border-white/30">
                                 <p class="text-sm font-medium">
                                     <i class="fas fa-external-link-alt mr-2 animate-pulse"></i>Klik untuk membuka di Google Maps
@@ -228,8 +261,6 @@ Anda semakin menyenangkan.
             </div>
         </div>
     </section>
-
-
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12">
@@ -261,8 +292,6 @@ Anda semakin menyenangkan.
                     </div>
                 </div>
 
-
-
                 <!-- Social Media -->
                 <div>
                     <h4 class="text-lg font-semibold mb-4 text-emerald-400">Media Sosial Kami</h4>
@@ -291,4 +320,5 @@ Anda semakin menyenangkan.
 
     <script src="js/main.js"></script>
 </body>
+
 </html>
