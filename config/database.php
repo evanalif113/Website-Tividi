@@ -2,9 +2,9 @@
 // Database configuration for Bus Tividi Pariwisata
 class Database {
     private $host = 'localhost';
-    private $db_name = 'bustividipariwisata';
-    private $username = 'root';
-    private $password = '';
+    private $db_name = 'tividi';
+    private $username = 'tividi';
+    private $password = 'tividi1234';
     private $conn;
 
     public function getConnection() {
