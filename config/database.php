@@ -3,9 +3,9 @@
 class Database
 {
     private $host = 'localhost';
-    private $db_name = 'tividitr1_tividi';     // ganti sesuai nama database di cPanel
-    private $username = 'tividitr1_admin';      // ganti sesuai nama user MySQL di cPanel
-    private $password = '4H6qE8RdM8SghIOB';         // ganti sesuai password MySQL yang kamu buat
+    private $db_name = 'bustividipariwisata';
+    private $username = 'root';
+    private $password = '';
     private $conn;
 
     public function getConnection()
