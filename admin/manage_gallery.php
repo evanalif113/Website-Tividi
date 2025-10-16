@@ -4,6 +4,11 @@ $active_page = 'gallery';
 session_start();
 require_once '../config/database.php';
 
+// Debug: tampilkan semua error
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Check if logged in
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header('Location: login.php');
@@ -19,18 +24,27 @@ $id = $_GET['id'] ?? null;
 
 // Handle form submissions for ADD and EDIT
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    echo "<pre>";
+    print_r($_POST);
+    print_r($_FILES);
+    echo "</pre>";
+    exit;
+    // Debug POST dan FILES
+    error_log("POST: " . print_r($_POST, true));
+    error_log("FILES: " . print_r($_FILES, true));
 
     if (isset($_POST['add_gallery'])) {
-        $image_path = ''; // Mulai dengan path kosong
+        $image_path = '';
         $message = '';
 
-        // Prioritas 1: Cek apakah ada file yang diupload
+        // Cek upload file
         if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
-
-            $upload_dir = '../images/gallery/';
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+            $upload_dir = realpath(__DIR__ . '/../images/gallery/');
+            if (!$upload_dir) {
+                mkdir(__DIR__ . '/../images/gallery/', 0755, true);
+                $upload_dir = realpath(__DIR__ . '/../images/gallery/');
             }
+            $upload_dir .= '/';
 
             $file_info = pathinfo($_FILES['image_file']['name']);
             $file_extension = strtolower($file_info['extension']);
@@ -41,37 +55,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $upload_path = $upload_dir . $new_filename;
 
                 if (move_uploaded_file($_FILES['image_file']['tmp_name'], $upload_path)) {
-                    // JIKA UPLOAD BERHASIL, GUNAKAN PATH INI
                     $image_path = 'images/gallery/' . $new_filename;
+                    error_log("Upload berhasil: $upload_path");
                 } else {
-                    $message = 'Error: Gagal memindahkan file yang diupload!';
+                    $message = 'Error: Gagal memindahkan file yang diupload! Cek permission folder ' . $upload_dir;
+                    error_log($message);
                 }
             } else {
                 $message = 'Error: Format file tidak didukung!';
+                error_log($message);
             }
+        } else if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $message = 'Error upload: ' . $_FILES['image_file']['error'];
+            error_log($message);
         }
-        // Prioritas 2: Jika tidak ada file diupload, baru gunakan path manual
+        // Jika tidak upload file, cek path manual
         elseif (!empty($_POST['image_path'])) {
             $image_path = $_POST['image_path'];
         }
 
-        // Lanjutkan untuk menyimpan ke database HANYA jika image_path sudah terisi
+        // Simpan ke database jika image_path sudah terisi
         if (!empty($image_path) && empty($message)) {
-            $stmt = $db->prepare("INSERT INTO gallery (title, image_path, category, description, is_featured, is_hero) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $_POST['title'],
-                $image_path, // Variabel ini sekarang berisi path yang benar
-                $_POST['category'],
-                $_POST['description'],
-                isset($_POST['is_featured']) ? 1 : 0,
-                isset($_POST['is_hero']) ? 1 : 0
-            ]);
-            header("Location: manage_gallery.php?message=add_success");
-            exit();
+            try {
+                $stmt = $db->prepare("INSERT INTO gallery (title, image_path, category, description, is_featured, is_hero) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([
+                    $_POST['title'],
+                    $image_path,
+                    $_POST['category'],
+                    $_POST['description'],
+                    isset($_POST['is_featured']) ? 1 : 0,
+                    isset($_POST['is_hero']) ? 1 : 0
+                ]);
+                header("Location: manage_gallery.php?message=add_success");
+                exit();
+            } catch (PDOException $e) {
+                $message = 'DB Error: ' . $e->getMessage();
+                error_log($message);
+            }
         } else {
-            // Jika tidak ada gambar sama sekali
             if (empty($message)) {
                 $message = "Error: Anda harus upload file atau mengisi path manual.";
+                error_log($message);
             }
         }
     }
@@ -80,10 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     elseif (isset($_POST['edit_gallery'])) {
         $image_path = $_POST['current_image_path'];
         if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
-            // (Logika upload file untuk edit ada di sini)
-            // ...
-            $upload_dir = '../images/gallery/';
-            if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+            $upload_dir = realpath(__DIR__ . '/../images/gallery/');
+            if (!$upload_dir) {
+                mkdir(__DIR__ . '/../images/gallery/', 0755, true);
+                $upload_dir = realpath(__DIR__ . '/../images/gallery/');
+            }
+            $upload_dir .= '/';
 
             $file_extension = strtolower(pathinfo($_FILES['image_file']['name'], PATHINFO_EXTENSION));
             $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -92,30 +118,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $new_filename = uniqid() . '_' . time() . '.' . $file_extension;
                 $upload_path = $upload_dir . $new_filename;
                 if (move_uploaded_file($_FILES['image_file']['tmp_name'], $upload_path)) {
-                    $old_file = '../' . $_POST['current_image_path'];
-                    if (file_exists($old_file)) unlink($old_file);
+                    $old_file = realpath(__DIR__ . '/../' . $_POST['current_image_path']);
+                    if ($old_file && file_exists($old_file)) unlink($old_file);
                     $image_path = 'images/gallery/' . $new_filename;
                 } else {
                     $message = 'Error: Gagal mengupload file!';
+                    error_log($message);
                 }
             } else {
                 $message = 'Error: Format file tidak didukung!';
+                error_log($message);
             }
         }
 
         if (empty($message)) {
-            $stmt = $db->prepare("UPDATE gallery SET title=?, image_path=?, category=?, description=?, is_featured=?, is_hero=? WHERE id=?");
-            $stmt->execute([
-                $_POST['title'],
-                $image_path,
-                $_POST['category'],
-                $_POST['description'],
-                isset($_POST['is_featured']) ? 1 : 0,
-                isset($_POST['is_hero']) ? 1 : 0,
-                $_POST['id']
-            ]);
-            header("Location: manage_gallery.php?message=edit_success");
-            exit();
+            try {
+                $stmt = $db->prepare("UPDATE gallery SET title=?, image_path=?, category=?, description=?, is_featured=?, is_hero=? WHERE id=?");
+                $stmt->execute([
+                    $_POST['title'],
+                    $image_path,
+                    $_POST['category'],
+                    $_POST['description'],
+                    isset($_POST['is_featured']) ? 1 : 0,
+                    isset($_POST['is_hero']) ? 1 : 0,
+                    $_POST['id']
+                ]);
+                header("Location: manage_gallery.php?message=edit_success");
+                exit();
+            } catch (PDOException $e) {
+                $message = 'DB Error: ' . $e->getMessage();
+                error_log($message);
+            }
         }
     }
 }
@@ -125,8 +158,8 @@ if (isset($_GET['delete'])) {
     $stmt = $db->prepare("SELECT image_path FROM gallery WHERE id=?");
     $stmt->execute([$_GET['delete']]);
     if ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $file_path = '../' . $item['image_path'];
-        if (file_exists($file_path)) unlink($file_path);
+        $file_path = realpath(__DIR__ . '/../' . $item['image_path']);
+        if ($file_path && file_exists($file_path)) unlink($file_path);
 
         $stmt = $db->prepare("DELETE FROM gallery WHERE id=?");
         $stmt->execute([$_GET['delete']]);
@@ -155,7 +188,7 @@ if ($action === 'edit' && $id) {
     $stmt = $db->prepare("SELECT * FROM gallery WHERE id=?");
     $stmt->execute([$id]);
     $gallery_item = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$gallery_item) { // Jika ID tidak ditemukan, kembali ke list
+    if (!$gallery_item) {
         header('Location: manage_gallery.php');
         exit();
     }
@@ -184,6 +217,12 @@ require_once 'includes/header.php';
                 </a>
             <?php endif; ?>
         </div>
+
+        <?php if (!empty($message)): ?>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
 
         <?php if ($action === 'list'): ?>
             <!-- Gallery Grid -->
@@ -248,6 +287,11 @@ require_once 'includes/header.php';
                 <?php if ($action === 'edit'): ?>
                     <input type="hidden" name="id" value="<?php echo $gallery_item['id']; ?>">
                     <input type="hidden" name="current_image_path" value="<?php echo htmlspecialchars($gallery_item['image_path']); ?>">
+                <?php endif; ?>
+                <?php if ($action === 'add'): ?>
+                    <input type="hidden" name="add_gallery" value="1">
+                <?php elseif ($action === 'edit'): ?>
+                    <input type="hidden" name="edit_gallery" value="1">
                 <?php endif; ?>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -321,7 +365,7 @@ require_once 'includes/header.php';
                 </div>
 
                 <div class="flex justify-end mt-6">
-                    <button type="submit" name="<?php echo $action === 'edit' ? 'edit_gallery' : 'add_gallery'; ?>"
+                    <button type="submit"
                         class="bg-turquoise-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-turquoise-700 shadow">
                         <?php echo $action === 'edit' ? 'Update Gallery' : 'Upload Foto'; ?>
                     </button>
